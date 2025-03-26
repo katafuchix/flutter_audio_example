@@ -74,6 +74,39 @@ import AVFoundation
         audioPlayer = nil
         result("Audio playback stopped")
     }
+
+    private func setSpeakerMode(speakerMode: Bool, result: @escaping FlutterResult) {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, options: [.allowBluetooth, .allowBluetoothA2DP])
+            try session.setActive(true)
+
+            if speakerMode {
+                try session.overrideOutputAudioPort(.speaker)
+            } else {
+                try session.overrideOutputAudioPort(.none)
+            }
+
+            result("Speaker mode set to \(speakerMode)")
+        } catch {
+            result(FlutterError(code: "SPEAKER_MODE_ERROR", message: "Failed to set speaker mode: \(error.localizedDescription)", details: nil))
+        }
+    }
+    
+    /*
+    private func setSpeakerMode(speakerMode: Bool, result: @escaping FlutterResult) {
+        do {
+            audioSession = AVAudioSession.sharedInstance()
+            try audioSession?.setCategory(.playAndRecord, options: speakerMode ? .defaultToSpeaker : [])
+            try audioSession?.setActive(true)
+            result("Speaker mode set to \(speakerMode)")
+        } catch {
+            result(FlutterError(code: "SPEAKER_MODE_ERROR", message: "Failed to set speaker mode: \(error.localizedDescription)", details: nil))
+        }
+    }*/
+}
+
+
 /*
     private func playAudio(urlString: String, result: @escaping FlutterResult) {
         guard let url = URL(string: urlString) else {
@@ -97,14 +130,3 @@ import AVFoundation
         result("Audio playback stopped")
     }
 */
-    private func setSpeakerMode(speakerMode: Bool, result: @escaping FlutterResult) {
-        do {
-            audioSession = AVAudioSession.sharedInstance()
-            try audioSession?.setCategory(.playAndRecord, options: speakerMode ? .defaultToSpeaker : [])
-            try audioSession?.setActive(true)
-            result("Speaker mode set to \(speakerMode)")
-        } catch {
-            result(FlutterError(code: "SPEAKER_MODE_ERROR", message: "Failed to set speaker mode: \(error.localizedDescription)", details: nil))
-        }
-    }
-}
