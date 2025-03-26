@@ -71,6 +71,39 @@ class MainActivity : FlutterActivity() {
 
     private fun setSpeakerMode(speakerMode: Boolean) {
         Log.d("SOUND", speakerMode.toString())
+
+        if (audioManager == null) {
+            Log.e("AudioMode", "AudioManager is null")
+            return
+        }
+
+        // 常にモード設定（APIバージョンに関係なく）
+        audioManager?.setMode(AudioManager.MODE_IN_COMMUNICATION)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (speakerMode) {
+                val devices = audioManager?.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                val speakerDevice = devices?.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+
+                Log.d("SOUND", "SpeakerDevice: $speakerDevice")
+
+                if (speakerDevice != null) {
+                    audioManager?.setCommunicationDevice(speakerDevice)
+                } else {
+                    Log.e("AudioMode", "No speaker device found")
+                }
+            } else {
+                // 元のルーティングに戻す（Androidに委ねる）
+                audioManager?.clearCommunicationDevice()
+            }
+        } else {
+            // API 31未満用（従来の切替方法）
+            audioManager?.isSpeakerphoneOn = speakerMode
+        }
+    }
+    /*
+    private fun setSpeakerMode(speakerMode: Boolean) {
+        Log.d("SOUND", speakerMode.toString())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val devices = audioManager?.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
             val targetDevice = if (speakerMode) {
@@ -91,4 +124,5 @@ class MainActivity : FlutterActivity() {
             audioManager?.isSpeakerphoneOn = speakerMode
         }
     }
+     */
 }
