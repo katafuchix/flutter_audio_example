@@ -12,6 +12,54 @@ class AudioPlayerScreen extends StatefulWidget {
 }
 
 class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
+  static const MethodChannel _channel = MethodChannel('speaker_control');
+  bool _isSpeakerOn = false;
+
+  Future<void> _playNativeAudio() async {
+    await _channel.invokeMethod('playAudioWithSpeaker', {
+      'useSpeaker': _isSpeakerOn,
+      'url': 'https://deskplate.net/debug/b.mp3',
+    });
+  }
+
+  void _toggleSpeaker() async {
+    setState(() {
+      _isSpeakerOn = !_isSpeakerOn;
+    });
+
+    // 🔽 Swift側に再生 + スピーカー状態を渡す
+    await _channel.invokeMethod('playAudioWithSpeaker', {
+      'useSpeaker': _isSpeakerOn,
+      'url': 'https://deskplate.net/debug/b.mp3',
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Audio + Speaker Toggle")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _playNativeAudio,
+              child: const Text("▶️ 再生（ネイティブ）"),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _toggleSpeaker,
+              child: Text(_isSpeakerOn ? "🔈 通常出力に切替" : "📢 スピーカー出力に切替"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/*
+class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   static const platform = MethodChannel('com.example.audio/mode');
@@ -81,3 +129,4 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     );
   }
 }
+*/
